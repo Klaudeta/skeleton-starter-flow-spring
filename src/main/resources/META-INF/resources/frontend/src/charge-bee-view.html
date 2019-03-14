@@ -1,0 +1,45 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/vaadin-button/src/vaadin-button.html">
+
+<dom-module id="charge-bee-view">
+
+    <template>
+<style include="shared-styles">
+            :host {
+                display: block;
+            }
+        </style>
+
+<vaadin-button theme="primary">
+  Free
+</vaadin-button>
+</template>
+
+    <script>
+        class ChargeBeeView extends Polymer.Element {
+            static get is() {
+                return 'charge-bee-view';
+            }
+
+            static get properties() {
+                return {
+                    dataCbType:{
+                        type: String,
+                        value: "checkout",
+                        reflectToAttribute:true
+                    },
+                    dataCbPlanId:{
+                        type: String,
+                        value: "cbdemo_free",
+                        reflectToAttribute:true
+                    }
+                };
+            }
+            connectedCallback() {
+                super.connectedCallback();
+                Chargebee.registerAgain();
+            }
+        }
+        customElements.define(ChargeBeeView.is, ChargeBeeView);
+    </script>
+</dom-module>
