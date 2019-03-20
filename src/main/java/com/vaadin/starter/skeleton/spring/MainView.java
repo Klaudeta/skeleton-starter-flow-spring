@@ -1,8 +1,7 @@
 package com.vaadin.starter.skeleton.spring;
 
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.vaadin.flow.component.textfield.TextField;
 
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
@@ -12,10 +11,28 @@ import com.vaadin.flow.server.PWA;
 @PWA(name = "Project Base for Vaadin Flow with Spring", shortName = "Project Base")
 public class MainView extends VerticalLayout {
 
-    public MainView(@Autowired MessageBean bean) {
-        Button button = new Button("Click me",
-                e -> Notification.show(bean.getMessage()));
-        add(new ChargeBeeView());
+    public MainView() {
+
+        ChargebeeCheckout checkout = new ChargebeeCheckout("Do checkout");
+        checkout.setCustomerEmail("weare@weare.com");
+
+        /*This listener for now with not be fired as the checkout process uses
+        the redirect_url mechanism after a successful checkout.*/
+        checkout.addSuccessListener(event -> {
+            Notification.show(event.getHostedPageId());
+        });
+
+        checkout.addCancelListener(event -> {
+            Notification.show("Checkout closed before completed!");
+        });
+
+
+        TextField email = new TextField();
+        email.addValueChangeListener(e -> {
+            checkout.setCustomerEmail(e.getValue());
+        });
+
+        add( email, checkout);
     }
 
 }

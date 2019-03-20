@@ -1,10 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/vaadin-button/src/vaadin-button.html">
 
-<dom-module id="charge-bee-view">
-
+<dom-module id="chargebee-checkout">
     <template>
-        <style include="shared-styles">
+        <style>
             :host {
                 display: block;
                 text-decoration: underline;
@@ -14,13 +12,14 @@
             }
         </style>
 
-        Checkout
-</template>
+        [[label]]
+
+    </template>
 
     <script>
-        class ChargeBeeView extends Polymer.Element {
+        class ChargebeeCheckout extends Polymer.Element {
             static get is() {
-                return 'charge-bee-view';
+                return 'chargebee-checkout';
             }
 
             static get properties() {
@@ -34,40 +33,49 @@
                         type: String,
                         value: "cbdemo_free",
                         reflectToAttribute:true
+                    },
+                    label:{
+                        type: String,
+                        value: 'Checkout',
+                        reflectToAttribute:true
+                    },
+                    customerEmail:{
+                        type: String,
+                        notify: true
                     }
                 };
             }
 
             ready(){
                 super.ready();
-                this.addEventListener("click", this.go());
+                this._clickListener = e => this._proceedToCheckout(e);
+                this.addEventListener("click", this._clickListener);
             }
 
-            go(){
+            _proceedToCheckout(e){
                 var cbInstance = Chargebee.getInstance();
                 var cart = cbInstance.getCart();
-                var customer = {email: 'klaudeta@gmail.com'};
-
-                cart.setCustomer(customer);
+                cart.setCustomer({email: this.customerEmail});
             }
+
             connectedCallback() {
                 super.connectedCallback();
+
                 Chargebee.registerAgain();
 
+                var that = this;
                 Chargebee.getInstance().setCheckoutCallbacks(function(cart) {
-                    // you can define a custom callbacks based on cart object
                     return {
                         loaded: function() {
-                            var customer = {email: 'klaudeta@gmail.com'};
-                            var cc = cbInstance.getCart();
-                            cc.setCustomer(customer);
                             console.log("checkout opened");
                         },
                         close: function() {
+                            that.dispatchEvent(new CustomEvent("cancel"));
                             console.log("checkout closed");
+
                         },
                         success: function(hostedPageId) {
-
+                            const evt = that.dispatchEvent(new CustomEvent("success", {detail: {hostedPageId: hostedPageId}}));
                         },
                         step: function(value) {
                             // value -> which step in checkout
@@ -78,6 +86,6 @@
             }
 
         }
-        customElements.define(ChargeBeeView.is, ChargeBeeView);
+        customElements.define(ChargebeeCheckout.is, ChargebeeCheckout);
     </script>
 </dom-module>
