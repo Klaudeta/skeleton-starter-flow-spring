@@ -11,6 +11,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -28,14 +29,8 @@ public class ChargebeeCheckout extends PolymerTemplate<ChargebeeCheckout.Chargeb
     private final Set<ComponentEventListener<CloseEvent>> closeListeners = new LinkedHashSet<>();
 
 
-    /**
-     * This private field is intended to check the status of the process
-     * after it has been closed. If is reset to false once the process loads,
-     * and set back to true when the process succeed. When the user closes the
-     * ChargeBee Checkout Process Window, the value of this field is used to
-     * determine if the process was successful or not.
-     */
-    private boolean successStatus = false;
+    private String hostedPageId;
+
 
     /**
      * Creates a new ChargebeeCheckout.
@@ -55,19 +50,19 @@ public class ChargebeeCheckout extends PolymerTemplate<ChargebeeCheckout.Chargeb
 
         ComponentUtil.addListener(this, LoadedEvent.class, (ComponentEventListener)
                 ((ComponentEventListener<LoadedEvent>) e -> {
-                    this.successStatus = false;
+                    hostedPageId = null;
                     loadedListeners.forEach(listener -> listener.onComponentEvent(e));
                 }));
 
         ComponentUtil.addListener(this, SuccessEvent.class, (ComponentEventListener)
                 ((ComponentEventListener<SuccessEvent>) e -> {
-                    successStatus = true;
+                    hostedPageId = e.getHostedPageId();
                     successListeners.forEach(listener -> listener.onComponentEvent(e));
                 }));
 
         ComponentUtil.addListener(this, ClientCloseEvent.class, (ComponentEventListener)
                 ((ComponentEventListener<ClientCloseEvent>) e -> {
-                    CloseEvent closeEvent = new CloseEvent(e.getSource(), successStatus == false);
+                    CloseEvent closeEvent = new CloseEvent(e.getSource(), hostedPageId);
                     closeListeners.forEach(listener -> listener.onComponentEvent(closeEvent));
                 }));
 
@@ -262,29 +257,28 @@ public class ChargebeeCheckout extends PolymerTemplate<ChargebeeCheckout.Chargeb
      */
     public static class CloseEvent extends ComponentEvent<ChargebeeCheckout> {
 
-
-        private boolean processCancelled;
-
+        private String hostedPageId;
 
         /**
-         * Creates a new event using the given source, and indicator whether the
-         * process was cancelled before completing successfully.
+         * Creates a new event using the given source, and the hostedPageId in
+         * case the process was completing successfully.
          *
          * @param source     the source component
-         * @param processCancelled <code>true</code> if the process was cancelled
+         * @param hostedPageId  hostedPageId if the process was successful
          */
-        public CloseEvent(ChargebeeCheckout source, boolean processCancelled) {
+        public CloseEvent(ChargebeeCheckout source, String hostedPageId) {
             super(source, false);
-            this.processCancelled = processCancelled;
+            this.hostedPageId = hostedPageId;
         }
 
         /**
-         * Checks if the checkout process was cancelled before being successfully completed.
+         * Returns an {@link Optional} object containing the hostedPageId
+         * if the checkout process was successfully completed.
          *
-         * @return boolean value
+         * @return an {@link Optional} object
          */
-        public boolean isProcessCancelled() {
-            return processCancelled;
+        public Optional<String> getHostedPageId() {
+            return Optional.ofNullable(hostedPageId);
         }
     }
 

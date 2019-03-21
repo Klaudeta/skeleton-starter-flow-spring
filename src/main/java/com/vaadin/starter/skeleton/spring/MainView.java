@@ -2,7 +2,9 @@ package com.vaadin.starter.skeleton.spring;
 
 import com.chargebee.Environment;
 import com.chargebee.ListResult;
+import com.chargebee.Result;
 import com.chargebee.models.Customer;
+import com.chargebee.models.HostedPage;
 import com.chargebee.models.Subscription;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
@@ -15,6 +17,10 @@ import com.vaadin.flow.server.PWA;
 @Route
 @PWA(name = "Project Base for Vaadin Flow with Spring", shortName = "Project Base")
 public class MainView extends VerticalLayout {
+
+    static{
+        Environment.configure("we-r-test","test_tEZcuYi2xvHsmQ4yhp8qmWT8lQXE99EHB");
+    }
 
     public MainView() {
 
@@ -30,13 +36,26 @@ public class MainView extends VerticalLayout {
         the redirect_url mechanism after a successful checkout.*/
         checkout.addSuccessListener(event -> {
             Notification.show(event.getHostedPageId());
+
         });
 
         checkout.addCloseListener(event -> {
-            if(event.isProcessCancelled())
+            if(!event.getHostedPageId().isPresent()) {
                 Notification.show("Checkout was cancelled before completing!");
-            else
-                Notification.show("Checkout closed after completing successfully!");
+            }else{
+                try {
+                    Notification.show("Checkout closed after completing successfully!");
+
+                    Result result = HostedPage.retrieve(event.getHostedPageId().get()).request();
+                    HostedPage hostedPage = result.hostedPage();
+
+                    Notification.show(String.format("hostedPageId: %s, \nemail: %s\ncustomerId: %s\n" ,event.getHostedPageId(), hostedPage.content().customer().email(), hostedPage.content().customer().id()));
+
+                }catch (Exception e){
+
+                }
+            }
+
         });
 
 
@@ -52,7 +71,7 @@ public class MainView extends VerticalLayout {
 
 
     private void deleteCustomerSubscriptions(String email){
-        Environment.configure("we-r-test","test_tEZcuYi2xvHsmQ4yhp8qmWT8lQXE99EHB");
+
         try {
             ListResult customer_result = Customer.list().email().is(email).request();
 
