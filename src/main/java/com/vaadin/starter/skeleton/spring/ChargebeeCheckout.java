@@ -23,9 +23,19 @@ import java.util.Set;
 @HtmlImport("src/chargebee-checkout.html")
 public class ChargebeeCheckout extends PolymerTemplate<ChargebeeCheckout.ChargebeeCheckoutModel> {
 
+    private final Set<ComponentEventListener<LoadedEvent>> loadedListeners = new LinkedHashSet<>();
     private final Set<ComponentEventListener<SuccessEvent>> successListeners = new LinkedHashSet<>();
-    private final Set<ComponentEventListener<CancelEvent>> cancelListeners = new LinkedHashSet<>();
+    private final Set<ComponentEventListener<CloseEvent>> closeListeners = new LinkedHashSet<>();
 
+
+    /**
+     * This private field is intended to check the status of the process
+     * after it has been closed. If is reset to false once the process loads,
+     * and set back to true when the process succeed. When the user closes the
+     * ChargeBee Checkout Process Window, the value of this field is used to
+     * determine if the process was successful or not.
+     */
+    private boolean successStatus = false;
 
     /**
      * Creates a new ChargebeeCheckout.
@@ -40,16 +50,28 @@ public class ChargebeeCheckout extends PolymerTemplate<ChargebeeCheckout.Chargeb
         setLabel(label);
     }
 
+
     private void setListeners(){
+
+        ComponentUtil.addListener(this, LoadedEvent.class, (ComponentEventListener)
+                ((ComponentEventListener<LoadedEvent>) e -> {
+                    this.successStatus = false;
+                    loadedListeners.forEach(listener -> listener.onComponentEvent(e));
+                }));
+
         ComponentUtil.addListener(this, SuccessEvent.class, (ComponentEventListener)
                 ((ComponentEventListener<SuccessEvent>) e -> {
+                    successStatus = true;
                     successListeners.forEach(listener -> listener.onComponentEvent(e));
                 }));
 
-        ComponentUtil.addListener(this, CancelEvent.class, (ComponentEventListener)
-                ((ComponentEventListener<CancelEvent>) e -> {
-                    cancelListeners.forEach(listener -> listener.onComponentEvent(e));
+        ComponentUtil.addListener(this, ClientCloseEvent.class, (ComponentEventListener)
+                ((ComponentEventListener<ClientCloseEvent>) e -> {
+                    CloseEvent closeEvent = new CloseEvent(e.getSource(), successStatus == false);
+                    closeListeners.forEach(listener -> listener.onComponentEvent(closeEvent));
                 }));
+
+
     }
     /**
      * Sets the label to be displayed on the component.
@@ -88,6 +110,7 @@ public class ChargebeeCheckout extends PolymerTemplate<ChargebeeCheckout.Chargeb
     public void setDataCbPlanId(String dataCbPlanId){
         getModel().setDataCbPlanId(dataCbPlanId);
     }
+
     /**
      * Registers a listener to be notified when the checkout process was successful.
      *
@@ -107,9 +130,21 @@ public class ChargebeeCheckout extends PolymerTemplate<ChargebeeCheckout.Chargeb
      *
      * @return a handle that can be used to unregister the listener
      */
-    public Registration addCancelListener(ComponentEventListener<CancelEvent> listener) {
-        cancelListeners.add(listener);
-        return () -> cancelListeners.remove(listener);
+    public Registration addCloseListener(ComponentEventListener<CloseEvent> listener) {
+        closeListeners.add(listener);
+        return () -> closeListeners.remove(listener);
+    }
+
+
+    /**
+     * Registers a listener to be notified when the checkout process is loaded.
+     *
+     * @param listener a listener to be notified
+     * @return a handle that can be used to unregister the listener
+     */
+    public Registration addLoadedListener(ComponentEventListener<LoadedEvent> listener) {
+        loadedListeners.add(listener);
+        return () -> loadedListeners.remove(listener);
     }
 
 
@@ -126,6 +161,27 @@ public class ChargebeeCheckout extends PolymerTemplate<ChargebeeCheckout.Chargeb
 
         void setCustomerEmail(String email);
 
+    }
+
+    /**
+     * Event fired when the checkout process is loaded.
+     *
+     */
+    @DomEvent("loaded")
+    public static class LoadedEvent extends ComponentEvent<ChargebeeCheckout> {
+
+
+        /**
+         * Creates a new event using the given source and indicator whether the
+         * event originated from the client side or the server side.
+         *
+         * @param source     the source component
+         * @param fromClient <code>true</code> if the event originated from the client
+         */
+        public LoadedEvent(ChargebeeCheckout source, boolean fromClient) {
+            super(source, fromClient);
+
+        }
     }
 
 
@@ -147,7 +203,7 @@ public class ChargebeeCheckout extends PolymerTemplate<ChargebeeCheckout.Chargeb
          * @param hostedPageId the hostedPageId of the checkout process
          */
         public SuccessEvent(ChargebeeCheckout source, boolean fromClient,
-                        @EventData("detail.hostedPageId") String hostedPageId) {
+                        @EventData("event.detail.hostedPageId") String hostedPageId) {
             super(source, fromClient);
 
             this.hostedPageId = hostedPageId;
@@ -159,13 +215,14 @@ public class ChargebeeCheckout extends PolymerTemplate<ChargebeeCheckout.Chargeb
     }
 
     /**
-     * Event fired when the checkout was cancelled.
+     * Event fired when the checkout is closed from the user.
      *
      */
-    @DomEvent("cancel")
-    public static class CancelEvent extends ComponentEvent<ChargebeeCheckout> {
+    @DomEvent("close")
+    public static class ClientCloseEvent extends ComponentEvent<ChargebeeCheckout> {
 
 
+        private boolean processCancelled;
         /**
          * Creates a new event using the given source and indicator whether the
          * event originated from the client side or the server side.
@@ -173,9 +230,63 @@ public class ChargebeeCheckout extends PolymerTemplate<ChargebeeCheckout.Chargeb
          * @param source     the source component
          * @param fromClient <code>true</code> if the event originated from the client
          */
-        public CancelEvent(ChargebeeCheckout source, boolean fromClient) {
+        public ClientCloseEvent(ChargebeeCheckout source, boolean fromClient) {
             super(source, fromClient);
+        }
 
+        /**
+         * Creates a new event using the given source, an indicator whether the
+         * event originated from the client side or the server side and
+         *
+         * @param source     the source component
+         * @param fromClient <code>true</code> if the event originated from the client
+         */
+        public ClientCloseEvent(ChargebeeCheckout source, boolean fromClient, boolean processCancelled) {
+            super(source, false);
+            this.processCancelled = processCancelled;
+        }
+
+        /**
+         * Determine if the checkout process was canceled before being successfully completed.
+         *
+         * @return boolean value
+         */
+        public boolean isProcessCancelled() {
+            return processCancelled;
         }
     }
+
+    /**
+     * Event fired when the checkout is closed from the user.
+     *
+     */
+    public static class CloseEvent extends ComponentEvent<ChargebeeCheckout> {
+
+
+        private boolean processCancelled;
+
+
+        /**
+         * Creates a new event using the given source, and indicator whether the
+         * process was cancelled before completing successfully.
+         *
+         * @param source     the source component
+         * @param processCancelled <code>true</code> if the process was cancelled
+         */
+        public CloseEvent(ChargebeeCheckout source, boolean processCancelled) {
+            super(source, false);
+            this.processCancelled = processCancelled;
+        }
+
+        /**
+         * Checks if the checkout process was cancelled before being successfully completed.
+         *
+         * @return boolean value
+         */
+        public boolean isProcessCancelled() {
+            return processCancelled;
+        }
+    }
+
+
 }

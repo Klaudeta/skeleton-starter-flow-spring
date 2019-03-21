@@ -68,14 +68,17 @@
                     return {
                         loaded: function() {
                             console.log("checkout opened");
+                            that.dispatchEvent(new CustomEvent('loaded'));
                         },
                         close: function() {
-                            that.dispatchEvent(new CustomEvent("cancel"));
+                            that.dispatchEvent(new CustomEvent("close"));
                             console.log("checkout closed");
 
                         },
                         success: function(hostedPageId) {
-                            const evt = that.dispatchEvent(new CustomEvent("success", {detail: {hostedPageId: hostedPageId}}));
+                            console.log("hostedPageId: " + hostedPageId);
+                            that.dispatchEvent(new CustomEvent('success', {detail: {hostedPageId: hostedPageId}}));
+
                         },
                         step: function(value) {
                             // value -> which step in checkout
