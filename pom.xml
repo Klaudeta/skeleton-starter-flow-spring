@@ -16,7 +16,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Dependencies -->
-        <vaadin.version>13.0-SNAPSHOT</vaadin.version>
+        <vaadin.version>13.0.1</vaadin.version>
     </properties>
 
     <parent>
@@ -79,7 +79,10 @@
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
         </dependency>
-
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-crud-flow</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

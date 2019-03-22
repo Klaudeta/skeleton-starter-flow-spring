@@ -1,0 +1,54 @@
+<link rel="import" href="../bower_components/polymer/lib/elements/custom-style.html">
+<link rel="import" href="../bower_components/vaadin-lumo-styles/typography.html">
+<link rel="import" href="../bower_components/vaadin-lumo-styles/color.html">
+<link rel="import" href="../bower_components/vaadin-lumo-styles/font-icons.html">
+
+<custom-style>
+    <style>
+        .crud-edit-button {
+            font-family: "lumo-icons", var(--lumo-font-family);
+            font-size: var(--lumo-icon-size-m);
+            line-height: 1;
+            color: var(--lumo-primary-text-color);
+            position: relative;
+            background-color: var(--lumo-contrast-5pct);
+            border-radius: var(--lumo-border-radius);
+            width: var(--lumo-size-s);
+            height: var(--lumo-size-s);
+        }
+
+        .crud-edit-button::before {
+            content: var(--lumo-icons-edit);
+            width: var(--lumo-size-m);
+            height: var(--lumo-size-m);
+            line-height: var(--lumo-size-m);
+            text-align: center;
+            position: absolute;
+            top: calc((var(--lumo-size-m) - var(--lumo-size-s)) / -2);
+            left: calc((var(--lumo-size-m) - var(--lumo-size-s)) / -2);
+        }
+
+        .crud-edit-button::after {
+            content: "";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            background-color: currentColor;
+            opacity: 0;
+            transition: opacity 100ms;
+        }
+
+        .crud-edit-button:hover::after {
+            opacity: 0.05;
+        }
+
+        .crud-edit-button:active::after {
+            opacity: 0.12;
+        }
+    </style>
+</custom-style>
+
