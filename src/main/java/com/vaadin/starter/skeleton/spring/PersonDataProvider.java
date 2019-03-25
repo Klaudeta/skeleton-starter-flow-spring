@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 public  class PersonDataProvider extends AbstractBackEndDataProvider<Person, CrudFilter> {
 
     // A real app should hook up something like JPA
-    final List<Person> DATABASE = new ArrayList<>(Arrays.asList(new Person(1, "Klaudeta", "Mertiku")));
+    final List<Person> DATABASE = new ArrayList<>(Arrays.asList(new Person(1, "Klaudeta", "Mertiku", "214234234", "12121212")));
 
     private Consumer<Long> sizeChangeListener;
 
