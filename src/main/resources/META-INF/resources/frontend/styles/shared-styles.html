@@ -1,0 +1,34 @@
+<link rel="import" href="../bower_components/polymer/lib/elements/custom-style.html">
+
+<dom-module id="custom-context-menu-overlay" theme-for="vaadin-context-menu-overlay">
+    <template>
+        <style>
+            :host{
+                --menu-top: var(--lumo-space-m);
+                --menu-right: var(--lumo-space-m);
+                --menu-left: var(--lumo-space-m);
+            }
+            @media (max-width: 420px), (max-height: 420px) {
+
+                :host {
+                    top: var(--menu-top) !important;
+                    right: var(--menu-right) !important;
+                    bottom: var(--lumo-space-m) !important;
+                    left: var(--menu-left) !important;
+                    align-items: unset!important;
+                    justify-content: unset!important;
+                }
+            }
+
+            :host([phone]) {
+                top: var(--menu-top) !important;
+                right: var(--menu-right) !important;
+                bottom: var(--lumo-space-m) !important;
+                left: var(--menu-left) !important;
+                align-items: unset!important;
+                justify-content: unset!important;
+            }
+
+        </style>
+    </template>
+</dom-module>
