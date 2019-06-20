@@ -156,6 +156,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <bowerMode>true</bowerMode>
+                </configuration>
             </plugin>
         </plugins>
     </build>
