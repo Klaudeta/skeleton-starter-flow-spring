@@ -10,13 +10,8 @@ import org.springframework.context.annotation.Scope;
 @Scope("prototype")
 public class SomeManagedBean extends VerticalLayout implements SomeInterface {
 
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-        if(attachEvent.isInitialAttach()){
-            add(new MyTemplate());
-        }
+    public SomeManagedBean() {
+        add(new MyTemplate());
     }
 
     @Override

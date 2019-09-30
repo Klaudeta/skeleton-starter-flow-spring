@@ -13,19 +13,9 @@ import com.vaadin.flow.server.PWA;
 @PWA(name = "Project Base for Vaadin Flow with Spring", shortName = "Project Base")
 public class MainView extends VerticalLayout {
 
-    private SomeInterface someInterface;
 
     public MainView(SomeInterface someInterface) {
-        this.someInterface = someInterface;
-
+        add(someInterface.asComponent());
     }
 
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-        if(attachEvent.isInitialAttach()){
-            add(someInterface.asComponent());
-        }
-    }
 }
